@@ -17,6 +17,13 @@ npm run build
 
 ```
 
----
-
-This project was generated with [electron-vue](https://github.com/SimulatedGREG/electron-vue)@[8d4ed60](https://github.com/SimulatedGREG/electron-vue/tree/8d4ed607d65300381a8f47d97923eb07832b1a9a) using [vue-cli](https://github.com/vuejs/vue-cli). Documentation about the original structure can be found [here](https://simulatedgreg.gitbooks.io/electron-vue/content/index.html).
+需要将 nodemodule/dev-tools/*/manifest.json  这个文件下的部分内容删除
+brower_action: {
+    default_icon: {
+        16...
+    }
+    ...
+}
+permissions: [
+    "contextMenus"
+]

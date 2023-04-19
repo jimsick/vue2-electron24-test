@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, Menu } from 'electron'
 import '../renderer/store'
 
 /**
@@ -13,16 +13,20 @@ let mainWindow
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
-
 function createWindow () {
   /**
    * Initial window options
    */
+  Menu.setApplicationMenu(null)
   mainWindow = new BrowserWindow({
     height: 563,
     useContentSize: true,
     width: 1000,
+    transparent: false,
+    frame: true,
+    menuBarVisible: false,
     webPreferences: {
+      webSecurity: false,
       nodeIntegration: true,
       enableRemoteModule: true,
       contextIsolation: false,

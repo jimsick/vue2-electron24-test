@@ -100,6 +100,7 @@
     "electron-debug": "^3.2.0",
     "electron-devtools-installer": "^3.2.0",
     "electron-rebuild": "^3.2.9",
+    "element-ui": "^2.15.13",
     "file-loader": "^1.1.11",
     "html-webpack-plugin": "^3.2.0",
     "listr": "^0.14.3",
