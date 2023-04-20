@@ -5,11 +5,25 @@
 </template>
 
 <script>
-  export default {
-    name: 'demo-pro'
-  }
+export default {
+  name: 'mini-tools'
+}
 </script>
 
 <style>
-  /* CSS */
+/* styles.css */
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  -webkit-app-region: no-drag;
+}
 </style>

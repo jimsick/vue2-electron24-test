@@ -23,7 +23,7 @@ Trace:
 
 npm manifest: 
   {
-    "name": "demo-pro",
+    "name": "mini-tools",
     "version": "0.0.1",
     "author": "zhouyanbing <877415861@qq.com>",
     "description": "An electron-vue project",
@@ -41,7 +41,7 @@ npm manifest:
       "postinstall": ""
     },
     "build": {
-      "productName": "demo-pro",
+      "productName": "mini-tools",
       "appId": "com.example.yourapp",
       "directories": {
         "output": "build"
