@@ -1,7 +1,10 @@
 import { app, BrowserWindow, Menu, ipcMain, Tray } from 'electron'
+import Vue from 'vue'
+
 import '../renderer/store'
 // 引入数据库
-import db from './datastore'
+// import db from '../renderer/plugin/datastore'
+/* 全局引入 */
 
 
 /**
@@ -113,10 +116,11 @@ function createWindow() {
     frame: false,
     alwaysOnTop: false,
     webPreferences: {
+      // preload: path.join(__dirname, 'preload.js'),
       webSecurity: false,
       nodeIntegration: true,
       enableRemoteModule: true,
-      contextIsolation: false,
+      contextIsolation: false, // false -> 可在渲染进程中使用electron的api，true->需要(contextBridge)
     }
   })
   // 忽略鼠标点击事件
@@ -179,13 +183,13 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
 //登录窗口最小化
 ipcMain.on('window-min', function () {
   mainWindow.minimize();
 })
 //登录窗口最大化
 ipcMain.on('window-max', function () {
-  console.log(mainWindow.isMaximized())
   if (mainWindow.isMaximized()) {
     mainWindow.restore();
   } else {
@@ -196,6 +200,13 @@ ipcMain.on('window-max', function () {
 ipcMain.on('window-close', function () {
   mainWindow.close();
 })
+
+// 获取用户目录
+ipcMain.handle('getPath', async (event, args) => {
+  const STORE_PATH = app.getPath('userData') // 获取electron应用的用户目录
+  return STORE_PATH
+})
+
 /**
  * Auto Updater
  *

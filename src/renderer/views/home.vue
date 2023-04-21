@@ -47,7 +47,6 @@
 </template>
   
 <script>
-const ipc = require("electron").ipcRenderer;
 const os = require('os');
 export default {
   name: 'HomeView',
@@ -69,19 +68,29 @@ export default {
     }
   },
   created() {
-    this.getVersion()
+    this.getVersion();
+    this.insertData();
   },
   mounted() {
   },
   methods: {
+    insertData(){
+      this.$db.insert(params).then((res)=>{
+        console.log("home:", res)
+      })
+      let params_ = {}
+      this.$db.find(params_).then((res)=>{
+        console.log("home:", res)
+      })
+    },
     getMenu(title) {
       this.menuActive = title
     },
     minWin() {
-      ipc.send('window-min');
+      this.$ipc.send('window-min');
     },
     closeWin() {
-      ipc.send('window-close');
+      this.$ipc.send('window-close');
     },
     getVersion() {
       // console.log(elc.app)
