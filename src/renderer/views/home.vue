@@ -31,14 +31,15 @@
       <div class="container">
         <div class="menu">
           <template v-for="(item) in menuList">
-            <div class="menu-item" :class="menuActive == item.title ? 'menu-active' : 'menu-no-active'"
-              @click="getMenu(item.title)">
+            <div class="menu-item" :class="currentPage  == item.value ? 'menu-active' : 'menu-no-active'"
+              @click="getMenu(item.value)">
               <i class="icon iconfont menu-icon" :class="'icon-' + item.icon"></i>
               <span class="menu-title">{{ item.title }}</span>
             </div>
           </template>
         </div>
         <div class="main">
+          <component :is="currentPage"></component>
           <!-- <a href="http://10.36.22.112/zentao/my.html" target="_blank">禅道</a> -->
         </div>
       </div>
@@ -48,23 +49,30 @@
   
 <script>
 const os = require('os');
+import webSetting from './webSetting';
+import norWeb from './normalWeb';
+
 export default {
   name: 'HomeView',
   components: {
+    webSetting,
+    norWeb
   },
   data() {
     return {
       userName: os.userInfo().username,
+      currentPage: "nor-web", // 当前组件参数
       version: "11",
       radio: "",
-      menuList: [{
+      menuList: [{  // 左侧菜单栏
         icon: "IE",
         title: '常用网站',
+        value: 'nor-web'
       }, {
         icon: "kaiguan",
         title: '设置',
+        value: 'web-setting'
       }],
-      menuActive: '常用网站',
     }
   },
   created() {
@@ -75,16 +83,10 @@ export default {
   },
   methods: {
     insertData(){
-      this.$db.insert(params).then((res)=>{
-        console.log("home:", res)
-      })
-      let params_ = {}
-      this.$db.find(params_).then((res)=>{
-        console.log("home:", res)
-      })
+    
     },
-    getMenu(title) {
-      this.menuActive = title
+    getMenu(val) {
+      if(this.menuActive != val) this.currentPage = val;
     },
     minWin() {
       this.$ipc.send('window-min');
@@ -104,6 +106,7 @@ export default {
 .main-container {
   display: flex;
   flex-direction: column;
+  background-color: #1e1e1e;
   background: url("~@/assets/images/title-img.jpg") no-repeat 0 0;
   background-size: cover;
 }

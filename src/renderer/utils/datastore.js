@@ -29,10 +29,10 @@ ipc.invoke(ipcApiRoute.getPath).then((res) => {
 })
 
 let db = {
-    insert(key, value) {
+    insert(param) {
         return new Promise((resolve, reject) => {
             nedb.insert(
-                { key, value },
+                param,
                 function (err, ret) {
                     if (err) {
                         reject(err);
@@ -41,9 +41,9 @@ let db = {
                 })
         });
     },
-    remove(key) {
+    remove(param) {
         nedb.remove(
-            { key },
+            param,
             { multi: true },
             function (err, numRemoved) {
                 if (err) {
@@ -52,12 +52,13 @@ let db = {
                 }
             });
     },
-    update(key, value) {
+    update(key, value, multi=true) {
+        console.log(key, value,multi)
         return new Promise((resolve, reject) => {
             nedb.update(
-                { key },
-                { $set: { value } },
-                { multi: true },
+                key,
+                { $set:  value  },
+                { multi: multi },
                 function (err, numReplaced) {
                     if (err) {
                         reject(err);
@@ -67,10 +68,10 @@ let db = {
             );
         });
     },
-    find(key) {
+    find(param) {
         return new Promise((resolve, reject) => {
             nedb.find(
-                { key },
+                param,
                 function (err, ret) {
                     if (err) {
                         reject(err);

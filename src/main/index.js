@@ -1,4 +1,5 @@
 import { app, BrowserWindow, Menu, ipcMain, Tray } from 'electron'
+
 import Vue from 'vue'
 
 import '../renderer/store'
@@ -106,6 +107,7 @@ function createWindow() {
   /**
    * Initial window options
    */
+
   Menu.setApplicationMenu(null)
   mainWindow = new BrowserWindow({
     height: 672,
@@ -207,6 +209,56 @@ ipcMain.handle('getPath', async (event, args) => {
   return STORE_PATH
 })
 
+let win_list = [];//存储打开的窗口
+//主进程监听创建窗口事件, 防止重复创建窗口
+ipcMain.on('createChildWindow', function (event, infor) {
+  console.log(infor)
+  const currentWindow = BrowserWindow.getFocusedWindow();　//获取当前活动的浏览器窗口。
+  let x;
+  if (currentWindow) { //如果上一步中有活动窗口，则根据当前活动窗口的右下方设置下一个窗口的坐标
+    const [currentWindowX, currentWindowY] = currentWindow.getPosition();
+    x = currentWindowX + 20;
+  }
+  let oldWin = null;
+  for (const item of win_list) { //判断要创建的窗口是否已经打开，如果已经打开取出窗口
+    if (item.url == infor.url) {
+      oldWin = item.mwin;
+      break;
+    }
+  }
+
+  if (oldWin) { //窗口存在直接打开
+    oldWin.show();
+  } else { //否则创建新窗口
+    Menu.setApplicationMenu(null)
+    let newwin = new BrowserWindow({
+      x,
+      minWidth: 1024,
+      minHeight: 768,
+      resizable: true,
+      movable: true,
+      // parent: win, //win是主窗口
+    })
+    newwin.maximize()
+    // newwin.webContents.openDevTools();
+    if (infor.type == 1) {
+      newwin.loadURL(path.join('file:', __dirname, infor.url));
+    } else {
+      newwin.loadURL(infor.url);
+    }
+    newwin.on('closed', () => { //窗口关闭。删除win_list存储的数据
+      for (let [index, item] of win_list.entries()) {
+        if (item.mwin == newwin) {
+          win_list.splice(index, 1);
+          newwin = null;
+          break;
+        }
+
+      }
+    });
+    win_list.push({ url: infor.url, mwin: newwin });
+  }
+})
 /**
  * Auto Updater
  *
@@ -226,3 +278,5 @@ app.on('ready', () => {
   if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdates()
 })
  */
+// const { desktopCapturer } = require('electron')
+

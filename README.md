@@ -1,14 +1,14 @@
 # mini-tools
 
 
-环境
+#### 环境
 ```
 window10
 node v16.14.0
-npm  v9.6.4
+npm  v8.19.4
 yarn v1.22.19
+
 ```
-> An electron-vue project
 
 #### Build Setup
 
@@ -23,8 +23,6 @@ npm run dev
 npm run build
 
 
-```
-
 需要将 nodemodule/dev-tools/*/manifest.json  这个文件下的部分内容删除
 brower_action: {
     default_icon: {
@@ -35,3 +33,6 @@ brower_action: {
 permissions: [
     "contextMenus"
 ]
+
+```
+

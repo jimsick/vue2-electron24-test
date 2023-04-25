@@ -7,14 +7,14 @@
   "glyphs": [
     {
       "icon_id": "374774",
-      "name": "开关",
+      "name": "kaiguan",
       "font_class": "kaiguan",
       "unicode": "e61e",
       "unicode_decimal": 58910
     },
     {
       "icon_id": "4766461",
-      "name": "file -exception",
+      "name": "file-exception",
       "font_class": "file-exception",
       "unicode": "e7dd",
       "unicode_decimal": 59357

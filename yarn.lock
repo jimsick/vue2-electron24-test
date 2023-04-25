@@ -5367,6 +5367,11 @@
   "resolved" "https://registry.npmjs.org/js-base64/-/js-base64-2.6.4.tgz"
   "version" "2.6.4"
 
+"js-pinyin@^0.1.9":
+  "integrity" "sha512-svn/0UsB2daFriHmqfCYX2xFWaNJs0iyoCMHVIwTFdc86mZhP0ZXfgI02/K1BC7aNE4fMjxx2kZMJBZ21kvp+Q=="
+  "resolved" "https://registry.npmjs.org/js-pinyin/-/js-pinyin-0.1.9.tgz"
+  "version" "0.1.9"
+
 "js-tokens@^3.0.0 || ^4.0.0":
   "integrity" "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="
   "resolved" "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz"
