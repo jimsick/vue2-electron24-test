@@ -9,6 +9,9 @@ npm  v8.19.4
 yarn v1.22.19
 
 ```
+Electron24 
+vue2
+```
 
 #### Build Setup
 
