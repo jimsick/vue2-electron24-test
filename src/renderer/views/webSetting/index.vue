@@ -6,7 +6,10 @@
           <div class="add-web web-block" @click="doWeb('新增')">
             <i class="icon iconfont icon-plus-circle add-web-icon"></i>
           </div>
-          <el-table class="ones" :data="webList" style="width: 100%">
+          <div class="config-table">
+            <el-table :data="webList"  height="100%" style="width: 100%">
+            <el-table-column type="index" label="序号" width="50">
+            </el-table-column>
             <el-table-column prop="webName" label="名称" width="100">
             </el-table-column>
             <el-table-column prop="webIcon" label="图标" width="100">
@@ -19,10 +22,12 @@
             <el-table-column label="操作">
               <template slot-scope="scope">
                 <el-button size="mini" @click="doWeb('编辑', scope.row)">编辑</el-button>
-                <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                <el-button size="mini" type="danger" @click="remove(scope.row._id)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
+          </div>
+          
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -33,14 +38,14 @@
         <i class="icon iconfont" :class="'icon-' + webParam.webIcon"></i>
         <span style="float: right; color: #8492a6; font-size: 13px">{{ webParam.webName }}</span>
       </div>
-      <el-form ref="form" :model="webParam" label-width="80px">
-        <el-form-item label="网站名称">
+      <el-form ref="webParam" :model="webParam" :rules="rules" label-width="80px">
+        <el-form-item label="网站名称" prop="webName">
           <el-input v-model="webParam.webName"></el-input>
         </el-form-item>
-        <el-form-item label="网站地址">
+        <el-form-item label="网站地址" prop="webUrl">
           <el-input v-model="webParam.webUrl"></el-input>
         </el-form-item>
-        <el-form-item label="网站图标">
+        <el-form-item label="网站图标" prop="webIcon">
           <el-select v-model="webParam.webIcon" placeholder="请选择">
             <el-option v-for="item in iconData.glyphs" :key="item.font_class" :label="item.name" :value="item.font_class">
               <i class="icon iconfont" :class="'icon-' + item.font_class"></i>
@@ -67,6 +72,15 @@ export default {
   components: {
   },
   data() {
+    let checkUrl = (rule, value, callback) => {
+      let reg = new RegExp("[a-zA-z]+://[^\s]*", "g");
+      console.log(reg.test(value))
+      if (!reg.test(value)) {
+        callback(new Error('网址不符合规范！'));
+      } else {
+        callback();
+      }
+    };
     return {
       iconData: jsonData,
       activeName: 'first',
@@ -77,6 +91,19 @@ export default {
         webUrl: "",
         webName: "",
         englishName: ""
+      },
+      rules: {
+        webName: [
+          { required: true, message: '请输入网站名称', trigger: 'blur' },
+          { min: 2, message: '长度至少2个字符', trigger: 'blur' }
+        ],
+        webUrl: [
+          { required: true, message: '请输入网站地址', trigger: 'blur' },
+          // { validator: checkUrl, trigger: 'blur' }
+        ],
+        webIcon: [
+          { required: true, message: '请选择标志', trigger: 'change' },
+        ],
       },
       webList: [],
     }
@@ -92,7 +119,7 @@ export default {
       let params = {
         type: 'web-config',
       }
-      this.$db.find(params).then((res, err) => {
+      this.$db.sort({timestamp: -1}).find(params).then((res, err) => {
         this.webList = res
       })
     },
@@ -101,9 +128,9 @@ export default {
     },
     doWeb(type, row) {
       this.type = type
-      if(type == '新增') {
+      if (type == '新增') {
         this.reset();
-      }else {
+      } else {
         this.webParam = row
       }
       this.webVisible = !this.webVisible
@@ -116,34 +143,50 @@ export default {
         webIcon: "",
         webUrl: "",
         webName: "",
-        englishName: ""
+        englishName: "",
+        
       }
     },
     submit() {
       let params;
-      if(this.type == "新增") {
-        // 获取英文名
-        if (this.webParam.webName) {
-          this.webParam.englishName = this.$py.getFullChars(this.webParam.webName)
+      this.$refs["webParam"].validate((valid) => {
+        if (valid) {
+          let reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
+          if (this.type == "新增") {
+            // 获取英文名
+            if (this.webParam.webName && reg.test(this.webParam.webName)) {
+              this.webParam.englishName = this.$py.getFullChars(this.webParam.webName)
+            }
+            params = {
+              type: 'web-config',
+              ...this.webParam,
+              timestamp: Date.now(),
+            }
+            this.$db.insert(params).then((res) => {
+              this.webVisible = false
+            })
+          } else {
+            params = {
+              ...this.webParam
+            }
+            this.$db.update({ _id: params._id }, params).then((res) => {
+              console.log(res)
+              this.webVisible = false
+            })
+          }
+          this.getWebConfig()
+        } else {
+          console.log('error submit!!');
+          return false;
         }
-        params = {
-          type: 'web-config',
-          ...this.webParam
-        }
-        this.$db.insert(params).then((res) => {
-          this.webVisible = false
-        })
-      } else {
-        params = {
-          ...this.webParam
-        }
-        this.$db.update({_id: params._id},params).then((res) => {
-          console.log(res)
-          this.webVisible = false
-        })
-      }
-      
-    }
+      });
+
+    },
+    remove(_id) {
+      this.$db.remove({ _id: _id }).then((res) => {
+        this.getWebConfig()
+      })
+    },
   },
 }
 </script>
@@ -152,9 +195,11 @@ export default {
   width: 100%;
   height: 100%;
 }
+
 /deep/ .ones {
-  background-color: rgba(255,255,255, 0);
+  background-color: rgba(255, 255, 255, 0);
 }
+
 .web-manage {
   height: 100%;
   display: flex;
@@ -207,6 +252,11 @@ export default {
 
 /deep/ .el-tabs--card>.el-tabs__header {
   border: none;
+}
+
+.config-table {
+  height: 419px;
+  width: 100%;
 }
 </style>
     

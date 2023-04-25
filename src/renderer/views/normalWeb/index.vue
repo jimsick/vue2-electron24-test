@@ -1,6 +1,6 @@
 <template>
   <div class="noraml-web">
-    <div class="web-block" v-for="(item, index) in [...webList,...webList,...webList,...webList,...webList,...webList]" :key="'web' + index" @click="openWeb(item.webUrl)">
+    <div class="web-block" v-for="(item, index) in webList" :key="'web' + index" @click="openWeb(item.webUrl)">
       <i class="icon iconfont  web-icon" :class="'icon-' + item.webIcon"></i>
       <span class="block-title">{{ item.webName }}</span>
     </div>
@@ -29,7 +29,7 @@ export default {
       let params = {
         type: 'web-config',
       }
-      this.$db.find(params).then((res, err) => {
+      this.$db.sort({timestamp: -1}).find(params).then((res, err) => {
         this.webList = res
       })
     },
@@ -54,8 +54,8 @@ export default {
 }
 
 .web-block {
-  width: 80px;
-  height: 80px;
+  width: 78px;
+  height: 78px;
   display: flex;
   align-items: center;
   justify-content: center;

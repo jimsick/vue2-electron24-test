@@ -39,7 +39,7 @@
           </template>
         </div>
         <div class="main">
-          <component :is="currentPage"></component>
+          <component :is="currentPage" class="com-style"></component>
           <!-- <a href="http://10.36.22.112/zentao/my.html" target="_blank">禅道</a> -->
         </div>
       </div>
@@ -229,6 +229,10 @@ export default {
 .icon-close:hover {
   color: #000;
   cursor: pointer;
+}
+.com-style {
+  height: 522px;
+  overflow-y: scroll;
 }
 </style>
   
