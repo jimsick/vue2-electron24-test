@@ -1,5 +1,4 @@
-# mini-tools
-
+因为学习Electron所以写了这个工程，在electron-vue的基础上升级了最新版的electron搭配vue做了一些小开发以及练习
 
 #### 环境
 ```
