@@ -1,6 +1,6 @@
 {
   "name": "mini-tools",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "zhouyanbing <877415861@qq.com>",
   "description": "An electron-vue project",
   "license": null,
@@ -104,6 +104,7 @@
     "electron-rebuild": "^3.2.9",
     "element-ui": "^2.15.13",
     "file-loader": "^1.1.11",
+    "fs": "^0.0.1-security",
     "html-webpack-plugin": "^3.2.0",
     "js-pinyin": "^0.1.9",
     "listr": "^0.14.3",

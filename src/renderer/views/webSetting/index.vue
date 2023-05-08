@@ -50,14 +50,25 @@
         <el-form-item label="网站地址" prop="webUrl">
           <el-input v-model="webParam.webUrl"></el-input>
         </el-form-item>
+        <el-form-item label="网站地址" prop="webUrl">
+          <el-switch v-model="webParam.iconOrImg" active-color="#13ce66" inactive-color="#59adff" active-text="图片"
+            inactive-text="ICON">
+          </el-switch>
+        </el-form-item>
         <el-form-item label="网站图标" prop="webIcon">
-          <el-select v-model="webParam.webIcon" placeholder="请选择">
+          <el-select v-if="!webParam.iconOrImg" v-model="webParam.webIcon" placeholder="请选择">
             <el-option v-for="item in iconData.glyphs" :key="item.font_class" :label="item.name" :value="item.font_class">
               <i class="icon iconfont" :class="'icon-' + item.font_class"></i>
               <span style="float: right; color: #8492a6; font-size: 13px">{{ item.font_class }}</span>
             </el-option>
           </el-select>
+          <el-upload v-else class="avatar-uploader upload" action="" :show-file-list="false"
+            :before-upload="beforeAvatarUpload">
+            <img v-if="webParam.imageUrl" :src="webParam.imageUrl" class="avatar">
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
         </el-form-item>
+
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="webVisible = false">取 消</el-button>
@@ -113,7 +124,9 @@ export default {
         webIcon: "",
         webUrl: "",
         webName: "",
-        englishName: ""
+        iconOrImg: false, // false为ICON  true为图片
+        englishName: "",
+        imageUrl: "",
       },
       rules: {
         webName: [
@@ -140,6 +153,22 @@ export default {
   mounted() {
   },
   methods: {
+    async beforeAvatarUpload(file) {
+      console.log(file)
+      const imgType = ['image/jpeg', 'image/png', 'image/jpg'].indexOf(file.type) != -1;
+      const isLt2M = file.size / 1024 / 1024 < 2;
+
+      if (!imgType) {
+        this.$message.error('上传头像图片只能是 JPG 格式!');
+      }
+      if (!isLt2M) {
+        this.$message.error('上传头像图片大小不能超过 2MB!');
+      }
+
+      ipcRenderer.send('uploadPic', file.name, file.path)
+
+      return true;
+    },
     // 初始化页面获取所有web配置
     getWebConfig() {
       let params = {
@@ -170,7 +199,9 @@ export default {
         webIcon: "",
         webUrl: "",
         webName: "",
+        iconOrImg: false,
         englishName: "",
+        imageUrl: "",
       }
     },
     submit() {
@@ -289,16 +320,20 @@ export default {
 /deep/ .el-input__inner {
   background-color: transparent;
 }
+
 /deep/ .el-table tr {
   background-color: transparent;
 }
+
 /deep/ .el-table--enable-row-hover .el-table__body tr:hover>td.el-table__cell {
   background-color: #59adff;
 }
+
 /deep/ .el-table th.el-table__cell {
   background-color: transparent;
   color: #fff;
-} 
+}
+
 .config-table {
   height: 419px;
   width: 100%;
@@ -332,5 +367,32 @@ export default {
 .config-dialog {
   -webkit-app-region: no-drag;
 }
+
+/* 图片上传预览样式 */
+.avatar-uploader /deep/ .el-upload {
+    border: 1px dashed #d9d9d9;
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .avatar-uploader /deep/ .el-upload:hover {
+    border-color: #409EFF;
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
+  }
 </style>
     

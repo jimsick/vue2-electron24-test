@@ -205,14 +205,19 @@ ipcMain.on('window-close', function () {
 
 // 获取用户目录
 ipcMain.handle('getPath', async (event, args) => {
-  const STORE_PATH = app.getPath('userData') // 获取electron应用的用户目录
+  let type = process.env.NODE_ENV == "development"? "userData":"exe";
+  // let type = "exe";
+
+  let STORE_PATH = app.getPath(type) // 获取electron应用的用户目录
+  if(type == "exe") {
+    STORE_PATH = STORE_PATH.substring(0, STORE_PATH.lastIndexOf("\\")+1)
+  }
   return STORE_PATH
 })
 
 let win_list = [];//存储打开的窗口
 //主进程监听创建窗口事件, 防止重复创建窗口
 ipcMain.on('createChildWindow', function (event, infor) {
-  console.log(infor)
   const currentWindow = BrowserWindow.getFocusedWindow();　//获取当前活动的浏览器窗口。
   let x;
   if (currentWindow) { //如果上一步中有活动窗口，则根据当前活动窗口的右下方设置下一个窗口的坐标

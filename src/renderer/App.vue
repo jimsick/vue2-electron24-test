@@ -5,8 +5,23 @@
 </template>
 
 <script>
+import { FileOrCreated, DirOrCreated } from '@/utils/index'
+import path from 'path'
+const fs = require('fs');
+
 export default {
-  name: 'mini-tools'
+  name: 'mini-tools',
+  created(){
+    this.checkFile();
+  },
+  methods: {
+    checkFile() {
+      this.$ipc.invoke(this.$ipcApi.getPath).then((res) => {
+        FileOrCreated(path.join(res, '/data.db')) // 创建数据库文件
+        DirOrCreated(path.join(res, '/webImgs'));  // 创建图片存储文件夹
+      })
+    }
+  }
 }
 </script>
 

@@ -18,8 +18,10 @@ const { ipcRenderer: ipc } = (window.require && window.require('electron')) || w
 import { ipcApiRoute } from '@/api/main'
 import Datastore from 'nedb'
 import path from 'path'
-
+import { FileOrCreated } from '@/utils/index'
+ 
 let nedb;
+
 // 获取基础目录，并创建基础数据库
 function DB() {
     ipc.invoke(ipcApiRoute.getPath).then((res) => {
@@ -109,5 +111,6 @@ DB.prototype.remove = function (query, options) {
 // module.exports = () => {
 //     return new DB();
 // }
+
 let db = new DB()
 export default db;

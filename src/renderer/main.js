@@ -9,12 +9,14 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css';
 import { ipc } from '@/utils/ipcRenderer'
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
+import { ipcApiRoute } from '@/api/main'
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 Vue.http = Vue.prototype.$http = axios
 Vue.config.productionTip = false
 // 全局注入IPC通信
 Vue.prototype.$ipc = ipc
+Vue.prototype.$ipcApi = ipcApiRoute
 // ElementUI
 Vue.use(ElementUI)
 Vue.prototype.$db = db
