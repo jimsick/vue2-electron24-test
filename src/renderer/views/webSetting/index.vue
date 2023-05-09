@@ -17,19 +17,20 @@
               </el-table-column>
               <el-table-column prop="webIcon" label="图标" width="100" align="center">
                 <template slot-scope="scope">
-                  <i class="icon iconfont"  v-if="!scope.row.iconOrImg" :class="'icon-' + scope.row.webIcon"></i>
+                  <i class="icon iconfont" style="font-size: 38px;" v-if="!scope.row.iconOrImg"
+                    :class="'icon-' + scope.row.webIcon"></i>
                   <img v-else class="pre-img-table" :src="formatUrl(scope.row.imageUrl)" alt="预览图片">
                 </template>
               </el-table-column>
-              <el-table-column prop="webUrl" label="地址">
+              <el-table-column prop="webUrl" width="350" label="地址">
                 <template slot-scope="scope">
-                  <a :href="scope.row.webUrl" target="_blank">{{ scope.row.webUrl }}</a>
+                  <a style="color:#fff" :href="scope.row.webUrl" target="_blank">{{ scope.row.webUrl }}</a>
                 </template>
               </el-table-column>
               <el-table-column label="操作">
                 <template slot-scope="scope">
                   <el-button size="mini" @click="doWeb('编辑', scope.row)">编辑</el-button>
-                  <el-button size="mini" type="danger" @click="remove(scope.row._id)">删除</el-button>
+                  <el-button size="mini" type="danger" @click="remove(scope.row.imageUrl, scope.row._id)">删除</el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -55,7 +56,7 @@
         <el-form-item label="网站地址" prop="webUrl">
           <el-input v-model="webParam.webUrl"></el-input>
         </el-form-item>
-        <el-form-item label="网站地址" prop="webUrl">
+        <el-form-item label="" prop="webUrl">
           <el-switch v-model="webParam.iconOrImg" active-color="#13ce66" inactive-color="#59adff" active-text="图片"
             inactive-text="ICON">
           </el-switch>
@@ -69,8 +70,10 @@
           </el-select>
           <el-upload v-else class="avatar-uploader upload" action="" :show-file-list="false"
             :before-upload="beforeAvatarUpload">
-            <img v-if="webParam.imageUrl" :src="webParam.imageUrl" class="avatar" :style="!webParam.imageUrl?{'width':'178px!important'}:''">
-            <i v-else class="el-icon-plus avatar-uploader-icon" :style="!webParam.imageUrl?{'width':'178px'}:''"></i>
+            <img v-if="webParam.imageUrl" :src="webParam.imageUrl" class="avatar"
+              :style="!webParam.imageUrl ? { 'width': '178px!important' } : ''">
+            <i v-else class="el-icon-plus avatar-uploader-icon"
+              :style="!webParam.imageUrl ? { 'width': '178px' } : ''"></i>
           </el-upload>
         </el-form-item>
 
@@ -93,10 +96,10 @@ export default {
   name: 'web-setting',
   components: {
   },
-  computed:{
-    formatUrl(){
+  computed: {
+    formatUrl() {
       return function (url) {
-        if(url) {
+        if (url) {
           return url.replaceAll("\\", "/")
         }
       };
@@ -135,7 +138,7 @@ export default {
       activeName: 'first',
       webVisible: false,
       type: "新增",
-      webParam: {  
+      webParam: {
         webIcon: "",
         webUrl: "",
         webName: "",
@@ -169,7 +172,7 @@ export default {
     async uploadImg(file) {
       const filePath = file.path
       const fileExt = filePath.split('.').pop()
-      this.webParam.imageUrl = await this.$ipc.invoke(this.$ipcApi.getPath).then((res)=>{
+      this.webParam.imageUrl = await this.$ipc.invoke(this.$ipcApi.getPath).then((res) => {
         const STORE_PATH = res
         const destPath = `${STORE_PATH}\\webImgs\\${Date.now()}.${fileExt}`
         fs.copyFile(filePath, destPath, (err) => {
@@ -234,27 +237,38 @@ export default {
       }
     },
     submit() {
-      let params;
       this.$refs["webParam"].validate((valid) => {
-        console.log("valid:", valid)
         if (valid) {
-          let reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
-          console.log(this.webParam.iconOrImg)
-          if(this.webParam.iconOrImg) {
-            this.uploadImg(this.tmpFile).then(()=>{
+          if (this.webParam.iconOrImg) {
+            this.webParam.webIcon = ""
+            this.uploadImg(this.tmpFile).then(() => {
               this.addOrEdit()
               this.getWebConfig()
             })
-          }else {
+          } else {
+            this.delImg(this.webParam.imageUrl)
+            this.webParam.imageUrl = ""
             this.addOrEdit()
+            this.getWebConfig()
           }
-          
+
         } else {
           return false;
         }
       });
     },
+    delImg(path) {
+      fs.unlink(path, function (err) {
+        if (err) {
+          console.log(err)
+          return false
+        }
+        console.log('rename successful')
+      })
+    },
     addOrEdit() {
+      let params;
+      let reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
       if (this.type == "新增") {
         // 获取英文名
         if (this.webParam.webName && reg.test(this.webParam.webName)) {
@@ -277,7 +291,8 @@ export default {
         })
       }
     },
-    remove(_id) {
+    remove(imgPath, _id) {
+      this.delImg(imgPath)
       this.$db.remove({ _id: _id }).then((res) => {
         this.getWebConfig()
       })
@@ -409,40 +424,46 @@ export default {
 
 /* 图片上传预览样式 */
 .avatar-uploader /deep/ .el-upload {
-    border: 1px dashed #d9d9d9;
-    /* width: 100%; */
-    height: 100%;
-    border-radius: 6px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-  .avatar-uploader /deep/ .el-upload:hover {
-    border-color: #409EFF;
-  }
-  .avatar-uploader-icon {
-    font-size: 28px;
-    color: #8c939d;
-    /* width: 178px; */
-    height: 178px;
-    line-height: 178px;
-    text-align: center;
-  }
-  .avatar {
-    /* width: 178px; */
-    height: 178px;
-    display: block;
-  }
-  .pre-img {
-    width: 40px;
-    height: 40px;
-    margin-bottom: 5px;
-  }
-  .pre-img-table {
-    height: 40px;
-  }
-  /deep/ .cell {
-    display: flex;
-  }
+  border: 1px dashed #d9d9d9;
+  /* width: 100%; */
+  height: 100%;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar-uploader /deep/ .el-upload:hover {
+  border-color: #409EFF;
+}
+
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  /* width: 178px; */
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+}
+
+.avatar {
+  /* width: 178px; */
+  height: 178px;
+  display: block;
+}
+
+.pre-img {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 5px;
+}
+
+.pre-img-table {
+  height: 40px;
+}
+
+/deep/ .cell {
+  line-height: unset;
+}
 </style>
     
