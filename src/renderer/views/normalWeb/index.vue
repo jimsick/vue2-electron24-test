@@ -1,7 +1,8 @@
 <template>
   <div class="noraml-web">
     <div class="web-block" v-for="(item, index) in webList" :key="'web' + index" @click="openWeb(item.webUrl)">
-      <i class="icon iconfont  web-icon" :class="'icon-' + item.webIcon"></i>
+      <i v-if="!item.iconOrImg" class="icon iconfont  web-icon" :class="'icon-' + item.webIcon"></i>
+      <img v-else class="pre-img" :src="formatUrl(item.imageUrl)" alt="预览图片">
       <span class="block-title">{{ item.webName }}</span>
     </div>
   </div>
@@ -16,6 +17,15 @@ export default {
   data() {
     return {
       webList: []
+    }
+  },
+  computed:{
+    formatUrl(){
+      return function (url) {
+        if(url) {
+          return url.replaceAll("\\", "/")
+        }
+      };
     }
   },
   created() {
@@ -54,13 +64,14 @@ export default {
 }
 
 .web-block {
-  width: 78px;
-  height: 78px;
+  /* width: 78px;
+  height: 78px; */
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  padding: 25px;
+  /* padding: 25px; */
+  margin-right: 50px;
   cursor: pointer;
 }
 
@@ -73,6 +84,10 @@ export default {
   color: #fff;
   font-size: 15px;
   margin-top: 2px;
+}
+.pre-img {
+  height: 80px;
+  margin-bottom: 5px;
 }
 </style>
     

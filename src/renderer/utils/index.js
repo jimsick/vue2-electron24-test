@@ -375,7 +375,7 @@ export function DirOrCreated(url) {
     })
   }
 }
-export function uploadPic() {
+export function uploadPic(filePath, fileName,) {
   var read=fs.createReadStream(paths);
   var write=fs.createWriteStream(path.join(__static,name));
   

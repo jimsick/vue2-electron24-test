@@ -15,12 +15,16 @@
               </el-table-column>
               <el-table-column prop="webName" label="名称" width="100">
               </el-table-column>
-              <el-table-column prop="webIcon" label="图标" width="100">
+              <el-table-column prop="webIcon" label="图标" width="100" align="center">
                 <template slot-scope="scope">
-                  <i class="icon iconfont" :class="'icon-' + scope.row.webIcon"></i>
+                  <i class="icon iconfont"  v-if="!scope.row.iconOrImg" :class="'icon-' + scope.row.webIcon"></i>
+                  <img v-else class="pre-img-table" :src="formatUrl(scope.row.imageUrl)" alt="预览图片">
                 </template>
               </el-table-column>
               <el-table-column prop="webUrl" label="地址">
+                <template slot-scope="scope">
+                  <a :href="scope.row.webUrl" target="_blank">{{ scope.row.webUrl }}</a>
+                </template>
               </el-table-column>
               <el-table-column label="操作">
                 <template slot-scope="scope">
@@ -39,7 +43,8 @@
       <div class="preview">
         <div class="title">预览</div>
         <div class="preview-show">
-          <i class="icon iconfont preview-web-icon" :class="'icon-' + webParam.webIcon"></i>
+          <i v-if="!webParam.iconOrImg" class="icon iconfont preview-web-icon" :class="'icon-' + webParam.webIcon"></i>
+          <img v-else class="pre-img" :src="webParam.imageUrl" alt="">
           <span style="float: right; color: #8492a6; font-size: 13px">{{ webParam.webName }}</span>
         </div>
       </div>
@@ -64,8 +69,8 @@
           </el-select>
           <el-upload v-else class="avatar-uploader upload" action="" :show-file-list="false"
             :before-upload="beforeAvatarUpload">
-            <img v-if="webParam.imageUrl" :src="webParam.imageUrl" class="avatar">
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            <img v-if="webParam.imageUrl" :src="webParam.imageUrl" class="avatar" :style="!webParam.imageUrl?{'width':'178px!important'}:''">
+            <i v-else class="el-icon-plus avatar-uploader-icon" :style="!webParam.imageUrl?{'width':'178px'}:''"></i>
           </el-upload>
         </el-form-item>
 
@@ -81,11 +86,21 @@
     
 <script>
 import jsonData from '@/assets/iconfont/iconfont.json'
-
+const fs = require('fs');
 const os = require('os');
+
 export default {
   name: 'web-setting',
   components: {
+  },
+  computed:{
+    formatUrl(){
+      return function (url) {
+        if(url) {
+          return url.replaceAll("\\", "/")
+        }
+      };
+    }
   },
   watch: {
     keyword: {
@@ -120,7 +135,7 @@ export default {
       activeName: 'first',
       webVisible: false,
       type: "新增",
-      webParam: {
+      webParam: {  
         webIcon: "",
         webUrl: "",
         webName: "",
@@ -137,14 +152,12 @@ export default {
           // { required: true, message: '请输入网站地址', trigger: 'blur' },
           { validator: checkUrl, trigger: 'blur' }
         ],
-        webIcon: [
-          { required: true, message: '请选择标志', trigger: 'change' },
-        ],
       },
       // 查询关键字
       keyword: "",
       webList: [],
       allData: [],
+      tmpFile: [],
     }
   },
   created() {
@@ -153,19 +166,35 @@ export default {
   mounted() {
   },
   methods: {
+    async uploadImg(file) {
+      const filePath = file.path
+      const fileExt = filePath.split('.').pop()
+      this.webParam.imageUrl = await this.$ipc.invoke(this.$ipcApi.getPath).then((res)=>{
+        const STORE_PATH = res
+        const destPath = `${STORE_PATH}\\webImgs\\${Date.now()}.${fileExt}`
+        fs.copyFile(filePath, destPath, (err) => {
+          if (err) throw err
+          // 返回保存的文件路径
+          return destPath
+        })
+        return destPath
+      })
+    },
     async beforeAvatarUpload(file) {
-      console.log(file)
       const imgType = ['image/jpeg', 'image/png', 'image/jpg'].indexOf(file.type) != -1;
-      const isLt2M = file.size / 1024 / 1024 < 2;
+      const isLt10M = file.size / 1024 / 1024 < 10;
 
       if (!imgType) {
         this.$message.error('上传头像图片只能是 JPG 格式!');
+        return;
       }
-      if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!');
+      if (!isLt10M) {
+        this.$message.error('上传头像图片大小不能超过 10MB!');
+        return;
       }
-
-      ipcRenderer.send('uploadPic', file.name, file.path)
+      this.tmpFile = file
+      this.webParam.imageUrl = file.path;
+      // ipcRenderer.send('uploadPic', file.name, file.path)
 
       return true;
     },
@@ -210,33 +239,43 @@ export default {
         console.log("valid:", valid)
         if (valid) {
           let reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
-          if (this.type == "新增") {
-            // 获取英文名
-            if (this.webParam.webName && reg.test(this.webParam.webName)) {
-              this.webParam.englishName = this.$py.getFullChars(this.webParam.webName)
-            }
-            params = {
-              type: 'web-config',
-              ...this.webParam,
-              timestamp: Date.now(),
-            }
-            this.$db.insert(params).then((res) => {
-              this.webVisible = false
+          console.log(this.webParam.iconOrImg)
+          if(this.webParam.iconOrImg) {
+            this.uploadImg(this.tmpFile).then(()=>{
+              this.addOrEdit()
+              this.getWebConfig()
             })
-          } else {
-            params = {
-              ...this.webParam
-            }
-            this.$db.update({ _id: params._id }, params).then((res) => {
-              this.webVisible = false
-            })
+          }else {
+            this.addOrEdit()
           }
-          this.getWebConfig()
+          
         } else {
           return false;
         }
       });
-
+    },
+    addOrEdit() {
+      if (this.type == "新增") {
+        // 获取英文名
+        if (this.webParam.webName && reg.test(this.webParam.webName)) {
+          this.webParam.englishName = this.$py.getFullChars(this.webParam.webName)
+        }
+        params = {
+          type: 'web-config',
+          ...this.webParam,
+          timestamp: Date.now(),
+        }
+        this.$db.insert(params).then((res) => {
+          this.webVisible = false
+        })
+      } else {
+        params = {
+          ...this.webParam
+        }
+        this.$db.update({ _id: params._id }, params).then((res) => {
+          this.webVisible = false
+        })
+      }
     },
     remove(_id) {
       this.$db.remove({ _id: _id }).then((res) => {
@@ -371,7 +410,7 @@ export default {
 /* 图片上传预览样式 */
 .avatar-uploader /deep/ .el-upload {
     border: 1px dashed #d9d9d9;
-    width: 100%;
+    /* width: 100%; */
     height: 100%;
     border-radius: 6px;
     cursor: pointer;
@@ -384,15 +423,26 @@ export default {
   .avatar-uploader-icon {
     font-size: 28px;
     color: #8c939d;
-    width: 178px;
+    /* width: 178px; */
     height: 178px;
     line-height: 178px;
     text-align: center;
   }
   .avatar {
-    width: 178px;
+    /* width: 178px; */
     height: 178px;
     display: block;
+  }
+  .pre-img {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 5px;
+  }
+  .pre-img-table {
+    height: 40px;
+  }
+  /deep/ .cell {
+    display: flex;
   }
 </style>
     

@@ -1,4 +1,5 @@
-import { app, BrowserWindow, Menu, ipcMain, Tray } from 'electron'
+import { app, BrowserWindow, Menu, ipcMain, Tray, dialog } from 'electron'
+const fs = require('fs')
 
 import Vue from 'vue'
 
@@ -184,6 +185,39 @@ app.on('activate', () => {
   if (mainWindow === null) {
     createWindow()
   }
+})
+// 上传图片dialog
+ipcMain.handle('uploadImg', async (event, args) => {
+  dialog.showOpenDialog({
+    properties: ['openFile', 'multiSelections'],
+    filters: [
+      { name: 'Images', extensions: ['jpg', 'png', 'gif'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]
+  }).then((result) => {
+    if (!result.canceled) {
+      // 保存文件到本地文件系统
+      const filePath = result.filePaths[0]
+      const fileExt = filePath.split('.').pop()
+      console.log(Date.now())
+      let type = process.env.NODE_ENV == "development"? "userData":"exe";
+      // let type = "exe";
+    
+      let STORE_PATH = app.getPath(type) // 获取electron应用的用户目录
+      const destPath = `${STORE_PATH}\\webImgs\\${Date.now()}.${fileExt}`
+      console.log(destPath)
+      fs.copyFile(filePath, destPath, (err) => {
+        if (err) throw err
+        console.log(`File saved to ${destPath}`)
+        // 返回保存的文件路径
+        return destPath
+      })
+    } else {
+      console.log('No file selected')
+    }
+  }).catch(err => {
+    console.log(err)
+  })
 })
 
 //登录窗口最小化

@@ -6,6 +6,7 @@
  */
 const ipcApiRoute = {
   getPath: 'getPath',
+  uploadImg: 'uploadImg',
 }
 
 /**

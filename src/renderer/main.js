@@ -10,8 +10,12 @@ import 'element-ui/lib/theme-chalk/index.css';
 import { ipc } from '@/utils/ipcRenderer'
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 import { ipcApiRoute } from '@/api/main'
-
+import Pinyin from 'js-pinyin'
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
+
+
+Pinyin.setOptions({ charCase: 1 })
+Vue.prototype.$py = Pinyin
 Vue.http = Vue.prototype.$http = axios
 Vue.config.productionTip = false
 // 全局注入IPC通信
